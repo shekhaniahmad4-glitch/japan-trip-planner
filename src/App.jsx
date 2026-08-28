@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage'
 import PlanPage from './pages/PlanPage'
 import ItineraryPage from './pages/ItineraryPage'
 import PetalRain from './components/PetalRain'
+import AudioDock from './components/AudioDock'
+import JapanSenseiModal from './components/JapanSenseiModal'
 
 function AnimatedRoutes() {
   const location = useLocation()
@@ -27,8 +29,9 @@ export default function App() {
         <PetalRain />
         <Navbar />
         <AnimatedRoutes />
+        <AudioDock />
+        <JapanSenseiModal />
       </TripProvider>
     </BrowserRouter>
   )
 }
-

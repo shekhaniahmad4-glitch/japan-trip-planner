@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Download, MapPin, Calendar, Users, Sparkles, Navigation, X } from 'lucide-react'
+import { ArrowLeft, Download, MapPin, Calendar, Users, Sparkles, Navigation, X, Share2, Ticket } from 'lucide-react'
 import { useTrip } from '../context/TripContext'
 import DayCard from '../components/DayCard'
 import CostBreakdown from '../components/CostBreakdown'
 import JapanMap from '../components/JapanMap'
+import BoardingPassModal from '../components/BoardingPassModal'
+import GachaponModal from '../components/GachaponModal'
 
 const DURATION_LABELS = {
   '1day':   '1 Day',
@@ -66,12 +68,20 @@ export default function ItineraryPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-950 via-purple-950 to-indigo-900 text-white py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <Link
-            to="/plan"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} /> Back to planner
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              to="/plan"
+              className="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors"
+            >
+              <ArrowLeft size={16} /> Back to planner
+            </Link>
+
+            {/* Top right interactive actions */}
+            <div className="flex items-center gap-2">
+              <GachaponModal />
+              <BoardingPassModal itinerary={itinerary} tripData={tripData} />
+            </div>
+          </div>
 
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div>
@@ -126,24 +136,35 @@ export default function ItineraryPage() {
       {/* Tabs */}
       <div className="bg-white border-b border-gray-100 sticky top-16 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-0">
-            {[
-              { id: 'itinerary', label: '📅 Day-by-Day & Map' },
-              { id: 'map', label: '🗺️ Full Map & Transit' },
-              { id: 'costs', label: '💴 Costs & Budget' },
-            ].map(({ id, label }) => (
+          <div className="flex items-center justify-between">
+            <div className="flex gap-0">
+              {[
+                { id: 'itinerary', label: '📅 Day-by-Day & Map' },
+                { id: 'map', label: '🗺️ Full Map & Transit' },
+                { id: 'costs', label: '💴 Costs & Budget' },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id)}
+                  className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === id
+                      ? 'border-pink-500 text-pink-600 font-bold'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-3">
               <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === id
-                    ? 'border-pink-500 text-pink-600 font-bold'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                onClick={handlePrint}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 hover:text-indigo-900 border border-gray-200 rounded-xl transition-all hover:bg-gray-50"
               >
-                {label}
+                <Download size={13} /> Print Itinerary
               </button>
-            ))}
+            </div>
           </div>
         </div>
       </div>
@@ -165,12 +186,6 @@ export default function ItineraryPage() {
                     Click any activity to view its exact location, station, and transit directions
                   </p>
                 </div>
-                <button
-                  onClick={handlePrint}
-                  className="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-900 transition-colors"
-                >
-                  <Download size={15} /> Print
-                </button>
               </div>
 
               {days.map((day, i) => (
