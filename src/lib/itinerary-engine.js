@@ -146,33 +146,67 @@ function findTransport(from, to) {
 function scoreActivity(activity, interests) {
   if (!interests || interests.length === 0) return 1
   const matches = activity.interests.filter(i => interests.includes(i))
-  return matches.length
+  if (matches.length > 0) {
+    // 100x weight per matching interest ensures exact relevance
+    return matches.length * 100
+  }
+  return 0
 }
 
 // ─────────────────────────────────────────────
 // Helper: pick best activities for a city/day
 // ─────────────────────────────────────────────
 function pickActivities(cityId, interests, travelStyle, dayIndex, usedIds) {
-  let cityActivities = activities.filter(a => a.city === cityId && !usedIds.has(a.id))
-  
-  if (cityActivities.length < 3) {
-    cityActivities = activities.filter(a => a.city === cityId)
-  }
-  if (cityActivities.length === 0) {
-    cityActivities = activities
+  const cityActivities = activities.filter(a => a.city === cityId)
+  const hasInterests = interests && interests.length > 0
+
+  // 1. Separate activities matching user's selected interests
+  const matching = hasInterests
+    ? cityActivities.filter(a => a.interests.some(i => interests.includes(i)))
+    : cityActivities
+
+  // 2. Form available pool prioritizing matching and unused activities
+  let pool = matching.filter(a => !usedIds.has(a.id))
+  if (pool.length < 3) {
+    pool = matching.length >= 3 ? matching : cityActivities.filter(a => !usedIds.has(a.id))
+    if (pool.length < 3) {
+      pool = cityActivities
+    }
   }
 
-  // Sort by relevance to interests
-  const scored = cityActivities.map(a => ({
+  // 3. Sort pool by score (highest interest match count first)
+  const scored = [...pool].map(a => ({
     ...a,
-    score: scoreActivity(a, interests) + (Math.random() * 0.5),
+    score: scoreActivity(a, interests) + (Math.random() * 0.1),
   })).sort((a, b) => b.score - a.score)
 
-  const morning = scored.find(a => a.timeOfDay.includes('morning')) || scored[0]
-  const afternoon = scored.filter(a => a.timeOfDay.includes('afternoon') && a.id !== morning?.id)[0] || scored.filter(a => a.id !== morning?.id)[0] || scored[0]
-  const evening = scored.filter(a => a.timeOfDay.includes('evening') && a.id !== morning?.id && a.id !== afternoon?.id)[0] || scored.filter(a => a.id !== morning?.id && a.id !== afternoon?.id)[0] || scored[0]
+  // 4. Select 3 distinct activities for morning, afternoon, evening
+  const picked = []
 
-  const picked = [morning, afternoon, evening].filter(Boolean)
+  // Morning slot
+  const morning = scored.find(a => a.timeOfDay.includes('morning') && !picked.some(p => p.id === a.id)) || scored[0]
+  if (morning) picked.push(morning)
+
+  // Afternoon slot
+  const afternoon =
+    scored.find(a => a.timeOfDay.includes('afternoon') && !picked.some(p => p.id === a.id)) ||
+    scored.find(a => !picked.some(p => p.id === a.id)) ||
+    scored[0]
+  if (afternoon && !picked.some(p => p.id === afternoon.id)) picked.push(afternoon)
+
+  // Evening slot
+  const evening =
+    scored.find(a => a.timeOfDay.includes('evening') && !picked.some(p => p.id === a.id)) ||
+    scored.find(a => !picked.some(p => p.id === a.id)) ||
+    scored[0]
+  if (evening && !picked.some(p => p.id === evening.id)) picked.push(evening)
+
+  // Ensure exactly 3 activities are present
+  while (picked.length < 3 && scored.length > 0) {
+    const next = scored.find(a => !picked.some(p => p.id === a.id)) || scored[picked.length % scored.length]
+    picked.push(next)
+  }
+
   picked.forEach(a => usedIds.add(a.id))
   return picked
 }

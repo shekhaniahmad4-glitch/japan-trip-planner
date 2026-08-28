@@ -173,3 +173,4 @@ export function getDirections({ origin, spot, cityId }) {
     googleMapsUrl,
   }
 }
+
