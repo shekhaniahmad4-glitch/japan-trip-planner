@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ArrowLeft, Sparkles, MapPin, Compass } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Check, Sparkles, AlertCircle } from 'lucide-react'
 import { useTrip } from '../context/TripContext'
 import { generateItinerary } from '../lib/itinerary-engine'
 import WizardProgress from '../components/WizardProgress'
@@ -18,8 +18,8 @@ const DURATIONS = [
 
 // ── Step 2: Destination ───────────────────────────────
 const DESTINATIONS = [
-  { id: 'all',       label: 'Entire Japan (Let Planner Decide)', emoji: '✨', region: 'All Regions', desc: 'Smart route tailored to your trip duration', highlight: true },
-  { id: 'tokyo',     label: 'Tokyo & Kanto', emoji: '🗼', region: 'Kanto', desc: 'Shinjuku, Shibuya, Akihabara, Asakusa & Hakone' },
+  { id: 'all',       label: 'Entire Japan (Let Planner Decide)', emoji: '✨', region: 'All Regions', desc: 'Auto-crafts the optimal multi-city route for your trip', isAll: true },
+  { id: 'tokyo',     label: 'Tokyo & Kanto', emoji: '🗼', region: 'Kanto', desc: 'Shinjuku, Shibuya, Akihabara, Asakusa & Hakone (Mt. Fuji)' },
   { id: 'osaka',     label: 'Osaka (Kitchen of Japan)', emoji: '🦑', region: 'Kansai', desc: 'Dotonbori street food, Universal Studios & nightlife' },
   { id: 'kyoto',     label: 'Kyoto (Ancient Capital)', emoji: '⛩️', region: 'Kansai', desc: 'Fushimi Inari, Arashiyama Bamboo & Gion Geisha district' },
   { id: 'kansai',    label: 'Kansai Region', emoji: '🏯', region: 'Kansai', desc: 'Best of Osaka, Kyoto & Nara free-roaming deer park' },
@@ -70,6 +70,46 @@ export default function PlanPage() {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [maxNotice, setMaxNotice] = useState(false)
+
+  const selectedDests = Array.isArray(tripData.destinations) && tripData.destinations.length > 0
+    ? tripData.destinations
+    : (tripData.destination ? [tripData.destination] : ['all'])
+
+  const isAllSelected = selectedDests.includes('all')
+
+  const toggleDestination = (id) => {
+    setMaxNotice(false)
+
+    if (id === 'all') {
+      updateTrip({ destinations: ['all'], destination: 'all' })
+      return
+    }
+
+    // If currently "all", clicking a specific city replaces it with just that city
+    if (isAllSelected) {
+      updateTrip({ destinations: [id], destination: id })
+      return
+    }
+
+    // If already selected, remove it
+    if (selectedDests.includes(id)) {
+      const next = selectedDests.filter(d => d !== id)
+      const finalDests = next.length > 0 ? next : ['all']
+      updateTrip({ destinations: finalDests, destination: finalDests[0] })
+      return
+    }
+
+    // If not selected yet and under limit of 3
+    if (selectedDests.length < 3) {
+      const next = [...selectedDests, id]
+      updateTrip({ destinations: next, destination: next[0] })
+    } else {
+      // Show notice that max 3 places reached
+      setMaxNotice(true)
+      setTimeout(() => setMaxNotice(false), 3000)
+    }
+  }
 
   const goTo = (nextStep) => {
     setDirection(nextStep > step ? 1 : -1)
@@ -79,14 +119,18 @@ export default function PlanPage() {
   const handleGenerate = () => {
     setLoading(true)
     setTimeout(() => {
-      const result = generateItinerary(tripData)
+      const result = generateItinerary({
+        ...tripData,
+        destinations: selectedDests,
+        destination: selectedDests[0] || 'all',
+      })
       setItinerary(result)
       navigate('/itinerary')
     }, 1000)
   }
 
   const canProceed1 = !!tripData.duration
-  const canProceed2 = !!tripData.destination
+  const canProceed2 = selectedDests.length > 0
   const canProceed3 = tripData.interests.length > 0
   const canProceed4 = !!tripData.travelStyle && !!tripData.groupType
 
@@ -147,7 +191,7 @@ export default function PlanPage() {
               </motion.div>
             )}
 
-            {/* ── STEP 2: DESTINATION ── */}
+            {/* ── STEP 2: DESTINATIONS (UP TO 3 OR ENTIRE JAPAN) ── */}
             {step === 2 && (
               <motion.div
                 key="step2"
@@ -158,33 +202,87 @@ export default function PlanPage() {
                 exit="exit"
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">Where do you want to go?</h2>
-                  <p className="text-gray-500 text-sm">Pick a specific region or let the planner build an optimal route across Japan</p>
+                  <p className="text-gray-500 text-sm">
+                    Select <strong>up to 3 places</strong> for your journey, or choose <strong>Entire Japan</strong>
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[460px] overflow-y-auto pr-1">
-                  {DESTINATIONS.map(({ id, label, emoji, desc, highlight }) => {
-                    const isSelected = tripData.destination === id
+                {/* Selection Counter Bar */}
+                <div className="flex items-center justify-between bg-white px-4 py-2.5 rounded-2xl shadow-sm border border-gray-100 mb-4">
+                  <div className="flex items-center gap-2">
+                    {isAllSelected ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                        <Sparkles size={13} className="text-amber-500" /> Entire Japan selected (Planner will route automatically)
+                      </span>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full border ${
+                        selectedDests.length === 3
+                          ? 'text-pink-700 bg-pink-50 border-pink-200'
+                          : 'text-indigo-700 bg-indigo-50 border-indigo-200'
+                      }`}>
+                        <Check size={13} /> {selectedDests.length} of 3 places selected
+                      </span>
+                    )}
+                  </div>
+                  
+                  {!isAllSelected && (
+                    <button
+                      onClick={() => toggleDestination('all')}
+                      className="text-xs text-pink-600 hover:text-pink-700 font-medium underline"
+                    >
+                      Switch to Entire Japan
+                    </button>
+                  )}
+                </div>
+
+                {/* Notice if 3 reached */}
+                {maxNotice && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 bg-pink-50 border border-pink-300 text-pink-700 text-xs px-3.5 py-2 rounded-xl mb-3"
+                  >
+                    <AlertCircle size={14} className="flex-shrink-0" />
+                    <span>You've selected the maximum of 3 places! Click a selected place to remove it first.</span>
+                  </motion.div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+                  {DESTINATIONS.map(({ id, label, emoji, desc, isAll }) => {
+                    const isSelected = isAll ? isAllSelected : selectedDests.includes(id)
+                    const selectedIndex = selectedDests.indexOf(id)
+
                     return (
                       <button
                         key={id}
-                        onClick={() => updateTrip({ destination: id })}
-                        className={`text-left p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.01] flex items-start gap-3.5 ${
-                          highlight && !isSelected ? 'border-amber-300 bg-amber-50/50' : ''
-                        } ${
-                          isSelected
+                        onClick={() => toggleDestination(id)}
+                        className={`text-left p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.01] flex items-start gap-3.5 relative ${
+                          isAll && isSelected
+                            ? 'border-amber-400 bg-amber-50/70 shadow-md ring-2 ring-amber-300'
+                            : isAll
+                            ? 'border-amber-200 bg-amber-50/30 hover:border-amber-300'
+                            : isSelected
                             ? 'border-pink-500 bg-pink-50 shadow-md ring-2 ring-pink-400'
+                            : selectedDests.length >= 3 && !isAll
+                            ? 'border-gray-200 bg-gray-50/60 opacity-80 hover:border-gray-300'
                             : 'border-gray-200 bg-white hover:border-pink-200'
                         }`}
                       >
                         <span className="text-3xl flex-shrink-0 mt-0.5">{emoji}</span>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-between gap-2">
                             <span className="font-bold text-indigo-950 text-sm">{label}</span>
-                            {highlight && (
-                              <span className="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">
-                                Recommended
+                            
+                            {/* Selected Badge */}
+                            {isSelected && (
+                              <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 flex items-center gap-1 ${
+                                isAll
+                                  ? 'bg-amber-500 text-white shadow-sm'
+                                  : 'bg-pink-500 text-white shadow-sm'
+                              }`}>
+                                <Check size={11} /> {isAll ? 'Auto' : `Place #${selectedIndex + 1}`}
                               </span>
                             )}
                           </div>

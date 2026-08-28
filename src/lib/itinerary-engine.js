@@ -3,7 +3,19 @@ import activities from '../data/activities.json'
 import transport from '../data/transport.json'
 
 // ─────────────────────────────────────────────
-// Route configurations by destination & duration
+// Total days by duration key
+// ─────────────────────────────────────────────
+const DURATION_DAYS = {
+  '1day':   1,
+  '2days':  2,
+  '3days':  3,
+  '1week':  7,
+  '2weeks': 14,
+  '1month': 30,
+}
+
+// ─────────────────────────────────────────────
+// Predefined curated single/all routes
 // ─────────────────────────────────────────────
 const ROUTE_CONFIGS = {
   all: {
@@ -121,10 +133,10 @@ function findTransport(from, to) {
            to,
            type: 'train',
            line: 'JR Limited Express / Shinkansen',
-           durationMin: 60,
-           costBudget: 3500,
-           costJPY: 3500,
-           notes: 'Scenic connecting train transit',
+           durationMin: 75,
+           costBudget: 4200,
+           costJPY: 4200,
+           notes: 'Scenic connecting train route',
          }
 }
 
@@ -181,19 +193,114 @@ function getAccommodation(cityId, travelStyle) {
 }
 
 // ─────────────────────────────────────────────
+// Map destination selection to city IDs
+// ─────────────────────────────────────────────
+function resolveCityIds(destList) {
+  const mapping = {
+    all: null,
+    tokyo: 'tokyo',
+    osaka: 'osaka',
+    kyoto: 'kyoto',
+    kansai: 'osaka',
+    sapporo: 'sapporo',
+    okinawa: 'okinawa',
+    hiroshima: 'hiroshima',
+    fukuoka: 'fukuoka',
+    kanazawa: 'kanazawa',
+  }
+  const resolved = []
+  for (const d of destList) {
+    if (d === 'all') return null
+    const mapped = mapping[d] || d
+    if (mapped && !resolved.includes(mapped)) {
+      resolved.push(mapped)
+    }
+  }
+  return resolved.length ? resolved : null
+}
+
+// ─────────────────────────────────────────────
 // Main itinerary generator
 // ─────────────────────────────────────────────
-export function generateItinerary({ duration, destination, interests, travelStyle, groupType }) {
+export function generateItinerary({ duration, destination, destinations, interests, travelStyle, groupType }) {
   const style = travelStyle || 'midrange'
   const dur = duration || '1week'
-  const dest = destination || 'all'
+  const totalDays = DURATION_DAYS[dur] || 7
 
-  const destConfig = ROUTE_CONFIGS[dest] || ROUTE_CONFIGS['all']
-  const plan = destConfig[dur] || ROUTE_CONFIGS['all'][dur] || ROUTE_CONFIGS['all']['1week']
-  
-  const cityRoute = plan.route
-  const daysMap = plan.days
-  const totalDays = Object.values(daysMap).reduce((s, d) => s + d, 0)
+  // Normalize destinations list (up to 3)
+  let destList = []
+  if (Array.isArray(destinations) && destinations.length > 0) {
+    destList = destinations.slice(0, 3)
+  } else if (typeof destination === 'string') {
+    destList = [destination]
+  } else {
+    destList = ['all']
+  }
+
+  let cityRoute = []
+  let daysMap = {}
+
+  const specificCities = resolveCityIds(destList)
+
+  if (!specificCities || destList.includes('all')) {
+    // Curated route for "Entire Japan"
+    const config = ROUTE_CONFIGS['all'][dur] || ROUTE_CONFIGS['all']['1week']
+    cityRoute = config.route
+    daysMap = { ...config.days }
+  } else if (specificCities.length === 1) {
+    // Single selected destination
+    const destKey = destList[0]
+    const destConfig = ROUTE_CONFIGS[destKey] || ROUTE_CONFIGS['all']
+    const config = destConfig[dur] || ROUTE_CONFIGS['all'][dur] || { route: [specificCities[0]], days: { [specificCities[0]]: totalDays } }
+    cityRoute = config.route
+    daysMap = { ...config.days }
+  } else {
+    // Multi-destination selection (2 or 3 places)
+    cityRoute = specificCities
+    const n = cityRoute.length
+
+    if (totalDays === 1) {
+      daysMap = { [cityRoute[0]]: 1 }
+      cityRoute = [cityRoute[0]]
+    } else if (totalDays === 2) {
+      if (n === 2) {
+        daysMap = { [cityRoute[0]]: 1, [cityRoute[1]]: 1 }
+      } else {
+        daysMap = { [cityRoute[0]]: 1, [cityRoute[1]]: 1 }
+        cityRoute = [cityRoute[0], cityRoute[1]]
+      }
+    } else if (totalDays === 3) {
+      if (n === 2) {
+        daysMap = { [cityRoute[0]]: 2, [cityRoute[1]]: 1 }
+      } else {
+        daysMap = { [cityRoute[0]]: 1, [cityRoute[1]]: 1, [cityRoute[2]]: 1 }
+      }
+    } else if (totalDays === 7) {
+      if (n === 2) {
+        daysMap = { [cityRoute[0]]: 4, [cityRoute[1]]: 3 }
+      } else {
+        daysMap = { [cityRoute[0]]: 3, [cityRoute[1]]: 2, [cityRoute[2]]: 2 }
+      }
+    } else if (totalDays === 14) {
+      if (n === 2) {
+        daysMap = { [cityRoute[0]]: 7, [cityRoute[1]]: 7 }
+      } else {
+        daysMap = { [cityRoute[0]]: 5, [cityRoute[1]]: 5, [cityRoute[2]]: 4 }
+      }
+    } else if (totalDays === 30) {
+      if (n === 2) {
+        daysMap = { [cityRoute[0]]: 15, [cityRoute[1]]: 15 }
+      } else {
+        daysMap = { [cityRoute[0]]: 10, [cityRoute[1]]: 10, [cityRoute[2]]: 10 }
+      }
+    } else {
+      const base = Math.floor(totalDays / n)
+      const rem = totalDays % n
+      cityRoute.forEach((c, idx) => {
+        daysMap[c] = base + (idx < rem ? 1 : 0)
+      })
+    }
+  }
 
   const usedActivityIds = new Set()
   const days = []
@@ -273,11 +380,11 @@ export function generateItinerary({ duration, destination, interests, travelStyl
 
   return {
     duration: dur,
-    destination: dest,
+    destinations: destList,
     interests,
     travelStyle: style,
     groupType,
-    totalDays,
+    totalDays: days.length,
     cities: cityObjects,
     days,
     costs: {
