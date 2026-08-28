@@ -1,7 +1,7 @@
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import { useEffect, useState } from 'react'
 import L from 'leaflet'
-import { Navigation, Train, Plane, Car, Footprints, ExternalLink, MapPin, Search, ArrowRight, X } from 'lucide-react'
+import { Navigation, Train, Plane, Car, Footprints, ExternalLink, MapPin, Search, ArrowRight, X, Image as ImageIcon } from 'lucide-react'
 import { getHubsForCity, getDirections } from '../lib/transit-directions'
 
 // Custom colored city markers
@@ -30,16 +30,16 @@ function createCityIcon(emoji, color = '#FF3366', isSelected = false) {
 // Special pulsing pin for selected activity / spot
 function createSpotIcon(emoji = '📍') {
   return L.divIcon({
-    html: `<div style="position: relative; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px;">
-      <div style="position: absolute; width: 42px; height: 42px; background: rgba(236, 72, 153, 0.4); border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-      <div style="position: relative; background: #EC4899; border: 3px solid white; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.5); z-index: 10;">
-        <span style="font-size: 16px;">${emoji}</span>
+    html: `<div style="position: relative; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px;">
+      <div style="position: absolute; width: 44px; height: 44px; background: rgba(236, 72, 153, 0.45); border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+      <div style="position: relative; background: #EC4899; border: 3px solid white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.6); z-index: 10;">
+        <span style="font-size: 18px;">${emoji}</span>
       </div>
     </div>`,
     className: '',
-    iconSize: [44, 44],
-    iconAnchor: [22, 22],
-    popupAnchor: [0, -22],
+    iconSize: [46, 46],
+    iconAnchor: [23, 23],
+    popupAnchor: [0, -23],
   })
 }
 
@@ -48,7 +48,7 @@ function MapController({ positions, selectedSpot }) {
 
   useEffect(() => {
     if (selectedSpot && selectedSpot.lat && selectedSpot.lng) {
-      map.flyTo([selectedSpot.lat, selectedSpot.lng], 13, { duration: 1.2 })
+      map.flyTo([selectedSpot.lat, selectedSpot.lng], 13.5, { duration: 1.2 })
     } else if (positions.length > 0) {
       const bounds = L.latLngBounds(positions)
       map.fitBounds(bounds, { padding: [50, 50] })
@@ -73,6 +73,7 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
   const [selectedHub, setSelectedHub] = useState(availableHubs[0])
   const [customOrigin, setCustomOrigin] = useState('')
   const [showCustomInput, setShowCustomInput] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
 
   // Update selected origin when spot changes
   useEffect(() => {
@@ -107,7 +108,7 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
       <MapContainer
         center={center}
         zoom={5}
-        style={{ height: '100%', width: '100%', minHeight: '420px' }}
+        style={{ height: '100%', width: '100%', minHeight: '440px' }}
         className="z-10"
       >
         {/* Clean English Tile Layer (Esri World Street Map) */}
@@ -141,7 +142,14 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
             icon={createCityIcon(city.emoji, ROUTE_COLORS[i % ROUTE_COLORS.length], selectedSpot?.city === city.id)}
           >
             <Popup>
-              <div className="p-1 min-w-[160px]">
+              <div className="p-1 min-w-[180px]">
+                {city.image && (
+                  <img
+                    src={city.image}
+                    alt={city.name}
+                    className="w-full h-24 object-cover rounded-lg mb-2"
+                  />
+                )}
                 <div className="font-bold text-base text-indigo-900 mb-1">
                   {city.emoji} {city.name}
                 </div>
@@ -161,7 +169,14 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
             icon={createSpotIcon(selectedSpot.emoji || '📍')}
           >
             <Popup autoPan={true}>
-              <div className="p-1 min-w-[180px]">
+              <div className="p-1 min-w-[200px]">
+                {selectedSpot.image && (
+                  <img
+                    src={selectedSpot.image}
+                    alt={selectedSpot.name}
+                    className="w-full h-24 object-cover rounded-lg mb-2"
+                  />
+                )}
                 <div className="font-bold text-sm text-pink-600 mb-1">
                   {selectedSpot.emoji} {selectedSpot.name}
                 </div>
@@ -172,10 +187,10 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
         )}
       </MapContainer>
 
-      {/* ── Interactive Directions Overlay Panel ── */}
+      {/* ── Interactive Directions & Photo Overlay Panel ── */}
       {selectedSpot && directionsData && (
         <div className="absolute top-3 left-3 right-3 sm:right-auto sm:max-w-md bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-pink-100 z-20 max-h-[92%] overflow-y-auto">
-          {/* Header */}
+          {/* Close button */}
           <div className="flex items-start justify-between gap-2 border-b border-gray-100 pb-2.5 mb-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{selectedSpot.emoji || '📍'}</span>
@@ -198,6 +213,29 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
               </button>
             )}
           </div>
+
+          {/* 📸 Place Photo Card */}
+          {selectedSpot.image && (
+            <div
+              className="relative w-full h-40 rounded-xl overflow-hidden mb-3 shadow-sm group cursor-pointer"
+              onClick={() => setShowImageModal(true)}
+            >
+              <img
+                src={selectedSpot.image}
+                alt={selectedSpot.name}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 flex items-end justify-between p-3">
+                <span className="text-white text-xs font-semibold drop-shadow flex items-center gap-1">
+                  📸 View Full Photo
+                </span>
+                <span className="bg-white/20 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+                  {selectedSpot.category}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Departure / Starting Point Selector */}
           <div className="mb-3">
@@ -290,9 +328,49 @@ export default function JapanMap({ cities, routes, selectedSpot, onClearSpot }) 
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-md transition-all duration-200 hover:scale-[1.01]"
           >
-            <span>🗺️ Open Turn-by-Turn Navigation</span>
+            <span>🗺️ Open Turn-by-Turn in Google Maps</span>
             <ExternalLink size={13} />
           </a>
+        </div>
+      )}
+
+      {/* ── High-Res Image Modal ── */}
+      {showImageModal && selectedSpot?.image && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowImageModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative h-72 sm:h-96">
+              <img
+                src={selectedSpot.image}
+                alt={selectedSpot.name}
+                className="w-full h-full object-cover"
+              />
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full backdrop-blur-xs transition-colors"
+              >
+                <X size={18} />
+              </button>
+              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">{selectedSpot.emoji}</span>
+                  <h3 className="font-serif text-xl font-bold">{selectedSpot.name}</h3>
+                </div>
+                <p className="text-xs text-white/80">{selectedSpot.description}</p>
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 flex items-center justify-between">
+              <span className="text-xs text-gray-500">🚇 {selectedSpot.station}</span>
+              <span className="text-xs font-bold text-pink-600">
+                {selectedSpot.costTier === 'free' ? 'Free Admission' : `¥${selectedSpot.costJPY?.toLocaleString()}`}
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </div>

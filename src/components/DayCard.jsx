@@ -70,31 +70,43 @@ function ActivityRow({ activity, slot, day, onSelectSpot, isSelected }) {
   return (
     <div
       onClick={handleSpotClick}
-      className={`group flex gap-3 py-3 px-2.5 rounded-xl border transition-all cursor-pointer ${
+      className={`group flex gap-3 p-3 rounded-2xl border transition-all cursor-pointer ${
         isSelected
-          ? 'bg-pink-50/90 border-pink-400 shadow-sm ring-1 ring-pink-400'
-          : 'border-transparent hover:bg-gray-100/80 hover:border-gray-200'
+          ? 'bg-pink-50/90 border-pink-400 shadow-md ring-1 ring-pink-400'
+          : 'border-gray-100 bg-white hover:border-pink-200 hover:shadow-sm'
       }`}
     >
-      <div className={`mt-0.5 ${timeColor} flex-shrink-0`}>
-        <TimeIcon size={16} />
-      </div>
+      {/* Activity Photo Thumbnail */}
+      {activity.image && (
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-xs border border-gray-100 relative">
+          <img
+            src={activity.image}
+            alt={activity.name}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+          <div className="absolute top-1 left-1 bg-black/60 backdrop-blur-xs text-white text-[10px] px-1 rounded flex items-center gap-0.5">
+            <TimeIcon size={10} className={timeColor} />
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="font-medium text-sm text-gray-800 leading-tight group-hover:text-pink-600 transition-colors">
+          <p className="font-bold text-sm text-gray-900 leading-tight group-hover:text-pink-600 transition-colors">
             {activity.emoji} {activity.name}
           </p>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${COST_TIER_BADGE[activity.costTier]}`}>
+          <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${COST_TIER_BADGE[activity.costTier]}`}>
             {activity.costTier === 'free' ? 'Free' : `¥${activity.costJPY?.toLocaleString()} (₱${Math.round((activity.costJPY || 0) * 0.37).toLocaleString()})`}
           </span>
         </div>
-        <p className="text-xs text-gray-500 mt-1 leading-relaxed">{activity.description}</p>
+        <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">{activity.description}</p>
         
-        <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-100/60">
+        <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-50">
           <p className="text-[11px] text-gray-400 flex items-center gap-1">
             <Clock size={11} /> ~{activity.durationHrs}h
             {activity.station && (
-              <span className="text-indigo-600 ml-2 truncate max-w-[200px]">
+              <span className="text-indigo-600 ml-2 truncate max-w-[170px] hidden sm:inline">
                 🚇 {activity.station.split('(')[0]}
               </span>
             )}
@@ -106,14 +118,14 @@ function ActivityRow({ activity, slot, day, onSelectSpot, isSelected }) {
               e.stopPropagation()
               handleSpotClick()
             }}
-            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg transition-all ${
+            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-all ${
               isSelected
                 ? 'bg-pink-500 text-white shadow-sm'
                 : 'bg-pink-50 text-pink-600 hover:bg-pink-100 group-hover:bg-pink-500 group-hover:text-white'
             }`}
           >
             <Navigation size={10} />
-            <span>{isSelected ? 'Viewing on Map' : 'Map & Directions'}</span>
+            <span>{isSelected ? 'Viewing on Map' : 'View on Map & Directions'}</span>
           </button>
         </div>
       </div>
@@ -197,7 +209,7 @@ export default function DayCard({ day, index, selectedSpot, onSelectSpot }) {
                   <span>Today's Plan</span>
                   <span className="text-[10px] text-pink-600 font-normal">Click any spot to view on map & directions</span>
                 </p>
-                <div className="bg-gray-50 rounded-xl px-2 py-1 space-y-1">
+                <div className="bg-gray-50/80 rounded-2xl p-2 space-y-2">
                   <ActivityRow
                     activity={morning}
                     slot="morning"
