@@ -1,20 +1,36 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ArrowLeft } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Sparkles, MapPin, Compass } from 'lucide-react'
 import { useTrip } from '../context/TripContext'
 import { generateItinerary } from '../lib/itinerary-engine'
 import WizardProgress from '../components/WizardProgress'
 
 // ── Step 1: Duration ──────────────────────────────────
 const DURATIONS = [
-  { id: '3days',  label: '3 Days',  sublabel: 'Weekend escape', emoji: '⚡', desc: 'Perfect for a taste of Tokyo\'s magic' },
+  { id: '1day',   label: '1 Day',   sublabel: 'Express / Layover', emoji: '⚡', desc: 'Fast-paced highlights tour of must-see landmarks' },
+  { id: '2days',  label: '2 Days',  sublabel: 'Weekend getaway', emoji: '🚅', desc: '48-hour action-packed city adventure' },
+  { id: '3days',  label: '3 Days',  sublabel: 'Long weekend', emoji: '🗼', desc: 'Perfect taste of Japan\'s magic & vibrant culture' },
   { id: '1week',  label: '1 Week',  sublabel: 'Classic trip', emoji: '🌸', desc: 'Tokyo, Kyoto & Osaka — the golden triangle' },
-  { id: '2weeks', label: '2 Weeks', sublabel: 'Deep dive', emoji: '🏯', desc: 'Add Hiroshima, Hakone & Nara for depth' },
-  { id: '1month', label: '1 Month', sublabel: 'Full adventure', emoji: '🗾', desc: 'Experience all of Japan — north to south' },
+  { id: '2weeks', label: '2 Weeks', sublabel: 'Grand journey', emoji: '🏯', desc: 'Add Hiroshima, Hakone & Nara for deep cultural immersion' },
+  { id: '1month', label: '1 Month', sublabel: 'Epic adventure', emoji: '🗾', desc: 'Experience all of Japan — from Hokkaido snow to Okinawa beaches' },
 ]
 
-// ── Step 2: Interests ─────────────────────────────────
+// ── Step 2: Destination ───────────────────────────────
+const DESTINATIONS = [
+  { id: 'all',       label: 'Entire Japan (Let Planner Decide)', emoji: '✨', region: 'All Regions', desc: 'Smart route tailored to your trip duration', highlight: true },
+  { id: 'tokyo',     label: 'Tokyo & Kanto', emoji: '🗼', region: 'Kanto', desc: 'Shinjuku, Shibuya, Akihabara, Asakusa & Hakone' },
+  { id: 'osaka',     label: 'Osaka (Kitchen of Japan)', emoji: '🦑', region: 'Kansai', desc: 'Dotonbori street food, Universal Studios & nightlife' },
+  { id: 'kyoto',     label: 'Kyoto (Ancient Capital)', emoji: '⛩️', region: 'Kansai', desc: 'Fushimi Inari, Arashiyama Bamboo & Gion Geisha district' },
+  { id: 'kansai',    label: 'Kansai Region', emoji: '🏯', region: 'Kansai', desc: 'Best of Osaka, Kyoto & Nara free-roaming deer park' },
+  { id: 'sapporo',   label: 'Hokkaido & Sapporo', emoji: '❄️', region: 'Hokkaido', desc: 'Beer museum, Susukino ramen alleys & mountain scenery' },
+  { id: 'okinawa',   label: 'Okinawa Tropical Islands', emoji: '🌊', region: 'Ryukyu', desc: 'White sand beaches, coral reef diving & castles' },
+  { id: 'hiroshima', label: 'Hiroshima & Miyajima', emoji: '🕊️', region: 'Chugoku', desc: 'Peace Memorial, Floating Torii Gate & Okonomimura' },
+  { id: 'fukuoka',   label: 'Fukuoka & Kyushu', emoji: '🍜', region: 'Kyushu', desc: 'Riverside Yatai food stalls, Hakata ramen & Dazaifu shrine' },
+  { id: 'kanazawa',  label: 'Kanazawa & Central Japan', emoji: '🍵', region: 'Chubu', desc: 'Kenroku-en garden, samurai quarters & fresh seafood' },
+]
+
+// ── Step 3: Interests ─────────────────────────────────
 const INTERESTS = [
   { id: 'history',     emoji: '🏯', label: 'History & Temples' },
   { id: 'food',        emoji: '🍜', label: 'Food & Street Food' },
@@ -28,7 +44,7 @@ const INTERESTS = [
   { id: 'technology',  emoji: '🤖', label: 'Technology' },
 ]
 
-// ── Step 3: Travel Style ──────────────────────────────
+// ── Step 4: Travel Style ──────────────────────────────
 const TRAVEL_STYLES = [
   { id: 'budget',   emoji: '🎒', label: 'Budget Explorer', desc: 'Hostels, convenience store meals, local transport', price: '₱3,000–4,500 / day (¥8k–12k)' },
   { id: 'midrange', emoji: '🏨', label: 'Comfortable Traveler', desc: 'Business hotels, local restaurants, JR Pass', price: '₱6,500–11,000 / day (¥18k–30k)' },
@@ -66,12 +82,13 @@ export default function PlanPage() {
       const result = generateItinerary(tripData)
       setItinerary(result)
       navigate('/itinerary')
-    }, 1200)
+    }, 1000)
   }
 
   const canProceed1 = !!tripData.duration
-  const canProceed2 = tripData.interests.length > 0
-  const canProceed3 = !!tripData.travelStyle && !!tripData.groupType
+  const canProceed2 = !!tripData.destination
+  const canProceed3 = tripData.interests.length > 0
+  const canProceed4 = !!tripData.travelStyle && !!tripData.groupType
 
   return (
     <motion.div
@@ -80,19 +97,21 @@ export default function PlanPage() {
       exit={{ opacity: 0 }}
       className="min-h-screen bg-cream pt-24 pb-16 px-4"
     >
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="font-serif text-3xl font-bold text-indigo-950 mb-2">
+          <h1 className="font-serif text-3xl md:text-4xl font-bold text-indigo-950 mb-2">
             Plan Your Japan Trip
           </h1>
-          <p className="text-gray-500">Let's build your perfect itinerary</p>
+          <p className="text-gray-500">Customized itinerary crafted in seconds</p>
         </div>
 
         <WizardProgress currentStep={step} />
 
         {/* Step panels */}
-        <div className="relative overflow-hidden min-h-[420px]">
+        <div className="relative overflow-hidden min-h-[460px]">
           <AnimatePresence custom={direction} mode="wait">
+            
+            {/* ── STEP 1: DURATION ── */}
             {step === 1 && (
               <motion.div
                 key="step1"
@@ -104,30 +123,31 @@ export default function PlanPage() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-center mb-6">
-                  <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">How long are you going?</h2>
-                  <p className="text-gray-500 text-sm">Choose your trip duration</p>
+                  <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">How long is your trip?</h2>
+                  <p className="text-gray-500 text-sm">Choose from a 1-day quick trip to a month-long grand voyage</p>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                   {DURATIONS.map(({ id, label, sublabel, emoji, desc }) => (
                     <button
                       key={id}
                       onClick={() => updateTrip({ duration: id })}
-                      className={`text-left p-5 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] ${
+                      className={`text-left p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] ${
                         tripData.duration === id
-                          ? 'border-pink-500 bg-pink-50 shadow-lg shadow-pink-100'
+                          ? 'border-pink-500 bg-pink-50 shadow-lg shadow-pink-100 ring-2 ring-pink-400'
                           : 'border-gray-200 bg-white hover:border-pink-200'
                       }`}
                     >
                       <div className="text-3xl mb-2">{emoji}</div>
-                      <div className="font-bold text-indigo-900 text-lg">{label}</div>
-                      <div className="text-pink-600 text-xs font-medium mb-2">{sublabel}</div>
-                      <div className="text-gray-500 text-sm">{desc}</div>
+                      <div className="font-bold text-indigo-900 text-base">{label}</div>
+                      <div className="text-pink-600 text-xs font-semibold mb-1.5">{sublabel}</div>
+                      <div className="text-gray-500 text-xs leading-relaxed">{desc}</div>
                     </button>
                   ))}
                 </div>
               </motion.div>
             )}
 
+            {/* ── STEP 2: DESTINATION ── */}
             {step === 2 && (
               <motion.div
                 key="step2"
@@ -139,8 +159,58 @@ export default function PlanPage() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-center mb-6">
+                  <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">Where do you want to go?</h2>
+                  <p className="text-gray-500 text-sm">Pick a specific region or let the planner build an optimal route across Japan</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[460px] overflow-y-auto pr-1">
+                  {DESTINATIONS.map(({ id, label, emoji, desc, highlight }) => {
+                    const isSelected = tripData.destination === id
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => updateTrip({ destination: id })}
+                        className={`text-left p-4 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.01] flex items-start gap-3.5 ${
+                          highlight && !isSelected ? 'border-amber-300 bg-amber-50/50' : ''
+                        } ${
+                          isSelected
+                            ? 'border-pink-500 bg-pink-50 shadow-md ring-2 ring-pink-400'
+                            : 'border-gray-200 bg-white hover:border-pink-200'
+                        }`}
+                      >
+                        <span className="text-3xl flex-shrink-0 mt-0.5">{emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-indigo-950 text-sm">{label}</span>
+                            {highlight && (
+                              <span className="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-semibold">
+                                Recommended
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-500 text-xs mt-1 leading-relaxed">{desc}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── STEP 3: INTERESTS ── */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.3 }}
+              >
+                <div className="text-center mb-6">
                   <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">What excites you?</h2>
-                  <p className="text-gray-500 text-sm">Select all that interest you (pick at least one)</p>
+                  <p className="text-gray-500 text-sm">Select all hobbies and activities you'd love to experience</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {INTERESTS.map(({ id, emoji, label }) => {
@@ -172,9 +242,10 @@ export default function PlanPage() {
               </motion.div>
             )}
 
-            {step === 3 && (
+            {/* ── STEP 4: TRAVEL STYLE & COMPANIONS ── */}
+            {step === 4 && (
               <motion.div
-                key="step3"
+                key="step4"
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -183,8 +254,8 @@ export default function PlanPage() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-center mb-6">
-                  <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">Your travel style?</h2>
-                  <p className="text-gray-500 text-sm">How do you like to travel?</p>
+                  <h2 className="font-serif text-2xl font-semibold text-indigo-950 mb-1">Travel style & companions</h2>
+                  <p className="text-gray-500 text-sm">Select your budget comfort tier and who is traveling</p>
                 </div>
 
                 {/* Travel style */}
@@ -195,7 +266,7 @@ export default function PlanPage() {
                       onClick={() => updateTrip({ travelStyle: id })}
                       className={`w-full text-left flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-200 ${
                         tripData.travelStyle === id
-                          ? 'border-pink-500 bg-pink-50 shadow-md'
+                          ? 'border-pink-500 bg-pink-50 shadow-md ring-2 ring-pink-400'
                           : 'border-gray-200 bg-white hover:border-pink-200'
                       }`}
                     >
@@ -204,7 +275,7 @@ export default function PlanPage() {
                         <p className="font-bold text-indigo-900">{label}</p>
                         <p className="text-gray-500 text-xs">{desc}</p>
                       </div>
-                      <span className={`text-sm font-semibold flex-shrink-0 ${
+                      <span className={`text-xs font-semibold flex-shrink-0 ${
                         tripData.travelStyle === id ? 'text-pink-600' : 'text-gray-400'
                       }`}>{price}</span>
                     </button>
@@ -221,7 +292,7 @@ export default function PlanPage() {
                         onClick={() => updateTrip({ groupType: id })}
                         className={`py-3 rounded-xl border-2 text-center transition-all duration-200 ${
                           tripData.groupType === id
-                            ? 'border-pink-500 bg-pink-50'
+                            ? 'border-pink-500 bg-pink-50 ring-2 ring-pink-400'
                             : 'border-gray-200 bg-white hover:border-pink-200'
                         }`}
                       >
@@ -233,6 +304,7 @@ export default function PlanPage() {
                 </div>
               </motion.div>
             )}
+
           </AnimatePresence>
         </div>
 
@@ -249,12 +321,18 @@ export default function PlanPage() {
             <div />
           )}
 
-          {step < 3 ? (
+          {step < 4 ? (
             <button
               onClick={() => goTo(step + 1)}
-              disabled={step === 1 ? !canProceed1 : !canProceed2}
+              disabled={
+                (step === 1 && !canProceed1) ||
+                (step === 2 && !canProceed2) ||
+                (step === 3 && !canProceed3)
+              }
               className={`btn-primary flex items-center gap-2 ml-auto ${
-                (step === 1 ? !canProceed1 : !canProceed2) ? 'opacity-40 cursor-not-allowed hover:scale-100' : ''
+                ((step === 1 && !canProceed1) || (step === 2 && !canProceed2) || (step === 3 && !canProceed3))
+                  ? 'opacity-40 cursor-not-allowed hover:scale-100'
+                  : ''
               }`}
             >
               Continue <ArrowRight size={16} />
@@ -262,9 +340,9 @@ export default function PlanPage() {
           ) : (
             <button
               onClick={handleGenerate}
-              disabled={!canProceed3 || loading}
+              disabled={!canProceed4 || loading}
               className={`btn-primary flex items-center gap-2 ml-auto ${
-                (!canProceed3 || loading) ? 'opacity-40 cursor-not-allowed hover:scale-100' : ''
+                (!canProceed4 || loading) ? 'opacity-40 cursor-not-allowed hover:scale-100' : ''
               }`}
             >
               {loading ? (
@@ -281,4 +359,3 @@ export default function PlanPage() {
     </motion.div>
   )
 }
-

@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { MapPin, Clock, DollarSign, Compass, ArrowRight, Star } from 'lucide-react'
 
 const FEATURES = [
-  { icon: Clock, title: 'Personalized Duration', desc: 'From a quick 3-day getaway to a full month-long journey across Japan.' },
+  { icon: Clock, title: 'Flexible Duration & Regions', desc: 'From 1-day express trips to a full month. Focus on Osaka, Tokyo, Kyoto, or explore all of Japan.' },
   { icon: Compass, title: 'Interest-Matched Activities', desc: 'Anime, temples, food, nature, technology — curated for you.' },
-  { icon: MapPin, title: 'Interactive Route Map', desc: 'Visualize your journey across Japan\'s iconic regions.' },
+  { icon: MapPin, title: 'Interactive English Route Map', desc: 'Visualize your journey with English labels across Japan\'s iconic regions.' },
   { icon: DollarSign, title: 'Real Cost Estimates', desc: 'Transparent breakdowns in Philippine Peso (PHP) and Japanese Yen (JPY).' },
 ]
 

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 
-const steps = ['Duration', 'Interests', 'Travel Style']
+const steps = ['Duration', 'Destination', 'Interests', 'Style']
 
 export default function WizardProgress({ currentStep }) {
   return (

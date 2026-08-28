@@ -8,6 +8,8 @@ import CostBreakdown from '../components/CostBreakdown'
 import JapanMap from '../components/JapanMap'
 
 const DURATION_LABELS = {
+  '1day':   '1 Day',
+  '2days':  '2 Days',
   '3days':  '3 Days',
   '1week':  '1 Week',
   '2weeks': '2 Weeks',

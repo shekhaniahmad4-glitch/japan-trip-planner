@@ -3,20 +3,89 @@ import activities from '../data/activities.json'
 import transport from '../data/transport.json'
 
 // ─────────────────────────────────────────────
-// City routing by duration
+// Route configurations by destination & duration
 // ─────────────────────────────────────────────
-const CITY_ROUTES = {
-  '3days':   ['tokyo'],
-  '1week':   ['tokyo', 'kyoto', 'osaka'],
-  '2weeks':  ['tokyo', 'hakone', 'kyoto', 'nara', 'osaka', 'hiroshima'],
-  '1month':  ['tokyo', 'nikko', 'hakone', 'nagoya', 'kanazawa', 'kyoto', 'nara', 'osaka', 'hiroshima', 'fukuoka', 'sapporo', 'okinawa'],
-}
-
-const DAYS_PER_CITY = {
-  '3days':  { tokyo: 3 },
-  '1week':  { tokyo: 3, kyoto: 2, osaka: 2 },
-  '2weeks': { tokyo: 3, hakone: 1, kyoto: 3, nara: 1, osaka: 2, hiroshima: 2 },
-  '1month': { tokyo: 4, nikko: 1, hakone: 2, nagoya: 1, kanazawa: 2, kyoto: 4, nara: 1, osaka: 3, hiroshima: 2, fukuoka: 3, sapporo: 3, okinawa: 4 },
+const ROUTE_CONFIGS = {
+  all: {
+    '1day':   { route: ['tokyo'], days: { tokyo: 1 } },
+    '2days':  { route: ['tokyo'], days: { tokyo: 2 } },
+    '3days':  { route: ['tokyo'], days: { tokyo: 3 } },
+    '1week':  { route: ['tokyo', 'kyoto', 'osaka'], days: { tokyo: 3, kyoto: 2, osaka: 2 } },
+    '2weeks': { route: ['tokyo', 'hakone', 'kyoto', 'nara', 'osaka', 'hiroshima'], days: { tokyo: 3, hakone: 1, kyoto: 3, nara: 1, osaka: 3, hiroshima: 3 } },
+    '1month': { route: ['tokyo', 'nikko', 'hakone', 'nagoya', 'kanazawa', 'kyoto', 'nara', 'osaka', 'hiroshima', 'fukuoka', 'sapporo', 'okinawa'], days: { tokyo: 4, nikko: 1, hakone: 2, nagoya: 1, kanazawa: 2, kyoto: 4, nara: 1, osaka: 3, hiroshima: 2, fukuoka: 3, sapporo: 3, okinawa: 4 } },
+  },
+  osaka: {
+    '1day':   { route: ['osaka'], days: { osaka: 1 } },
+    '2days':  { route: ['osaka'], days: { osaka: 2 } },
+    '3days':  { route: ['osaka'], days: { osaka: 3 } },
+    '1week':  { route: ['osaka', 'kyoto', 'nara'], days: { osaka: 3, kyoto: 3, nara: 1 } },
+    '2weeks': { route: ['osaka', 'kyoto', 'nara', 'hiroshima'], days: { osaka: 5, kyoto: 4, nara: 2, hiroshima: 3 } },
+    '1month': { route: ['osaka', 'kyoto', 'nara', 'hiroshima', 'fukuoka'], days: { osaka: 9, kyoto: 8, nara: 3, hiroshima: 5, fukuoka: 5 } },
+  },
+  kyoto: {
+    '1day':   { route: ['kyoto'], days: { kyoto: 1 } },
+    '2days':  { route: ['kyoto'], days: { kyoto: 2 } },
+    '3days':  { route: ['kyoto'], days: { kyoto: 3 } },
+    '1week':  { route: ['kyoto', 'nara', 'osaka'], days: { kyoto: 4, nara: 1, osaka: 2 } },
+    '2weeks': { route: ['kyoto', 'nara', 'osaka', 'kanazawa'], days: { kyoto: 6, nara: 2, osaka: 3, kanazawa: 3 } },
+    '1month': { route: ['kyoto', 'nara', 'osaka', 'kanazawa', 'hiroshima', 'tokyo'], days: { kyoto: 10, nara: 3, osaka: 6, kanazawa: 4, hiroshima: 3, tokyo: 4 } },
+  },
+  kansai: {
+    '1day':   { route: ['osaka'], days: { osaka: 1 } },
+    '2days':  { route: ['osaka', 'kyoto'], days: { osaka: 1, kyoto: 1 } },
+    '3days':  { route: ['osaka', 'kyoto', 'nara'], days: { osaka: 1, kyoto: 1, nara: 1 } },
+    '1week':  { route: ['osaka', 'kyoto', 'nara'], days: { osaka: 3, kyoto: 3, nara: 1 } },
+    '2weeks': { route: ['osaka', 'kyoto', 'nara', 'hiroshima'], days: { osaka: 5, kyoto: 4, nara: 2, hiroshima: 3 } },
+    '1month': { route: ['osaka', 'kyoto', 'nara', 'hiroshima', 'fukuoka'], days: { osaka: 9, kyoto: 8, nara: 3, hiroshima: 5, fukuoka: 5 } },
+  },
+  tokyo: {
+    '1day':   { route: ['tokyo'], days: { tokyo: 1 } },
+    '2days':  { route: ['tokyo'], days: { tokyo: 2 } },
+    '3days':  { route: ['tokyo'], days: { tokyo: 3 } },
+    '1week':  { route: ['tokyo', 'hakone', 'nikko'], days: { tokyo: 4, hakone: 2, nikko: 1 } },
+    '2weeks': { route: ['tokyo', 'hakone', 'nikko', 'nagoya'], days: { tokyo: 7, hakone: 3, nikko: 2, nagoya: 2 } },
+    '1month': { route: ['tokyo', 'hakone', 'nikko', 'nagoya', 'kanazawa'], days: { tokyo: 14, hakone: 5, nikko: 4, nagoya: 3, kanazawa: 4 } },
+  },
+  sapporo: {
+    '1day':   { route: ['sapporo'], days: { sapporo: 1 } },
+    '2days':  { route: ['sapporo'], days: { sapporo: 2 } },
+    '3days':  { route: ['sapporo'], days: { sapporo: 3 } },
+    '1week':  { route: ['sapporo', 'tokyo'], days: { sapporo: 4, tokyo: 3 } },
+    '2weeks': { route: ['sapporo', 'tokyo', 'hakone'], days: { sapporo: 7, tokyo: 5, hakone: 2 } },
+    '1month': { route: ['sapporo', 'tokyo', 'kanazawa', 'kyoto'], days: { sapporo: 10, tokyo: 8, kanazawa: 4, kyoto: 8 } },
+  },
+  okinawa: {
+    '1day':   { route: ['okinawa'], days: { okinawa: 1 } },
+    '2days':  { route: ['okinawa'], days: { okinawa: 2 } },
+    '3days':  { route: ['okinawa'], days: { okinawa: 3 } },
+    '1week':  { route: ['okinawa'], days: { okinawa: 7 } },
+    '2weeks': { route: ['okinawa', 'fukuoka'], days: { okinawa: 9, fukuoka: 5 } },
+    '1month': { route: ['okinawa', 'fukuoka', 'osaka', 'tokyo'], days: { okinawa: 12, fukuoka: 6, osaka: 6, tokyo: 6 } },
+  },
+  hiroshima: {
+    '1day':   { route: ['hiroshima'], days: { hiroshima: 1 } },
+    '2days':  { route: ['hiroshima'], days: { hiroshima: 2 } },
+    '3days':  { route: ['hiroshima'], days: { hiroshima: 3 } },
+    '1week':  { route: ['hiroshima', 'osaka', 'kyoto'], days: { hiroshima: 3, osaka: 2, kyoto: 2 } },
+    '2weeks': { route: ['hiroshima', 'fukuoka', 'osaka', 'kyoto'], days: { hiroshima: 4, fukuoka: 3, osaka: 4, kyoto: 3 } },
+    '1month': { route: ['hiroshima', 'fukuoka', 'osaka', 'kyoto', 'tokyo'], days: { hiroshima: 6, fukuoka: 6, osaka: 6, kyoto: 6, tokyo: 6 } },
+  },
+  fukuoka: {
+    '1day':   { route: ['fukuoka'], days: { fukuoka: 1 } },
+    '2days':  { route: ['fukuoka'], days: { fukuoka: 2 } },
+    '3days':  { route: ['fukuoka'], days: { fukuoka: 3 } },
+    '1week':  { route: ['fukuoka', 'hiroshima', 'osaka'], days: { fukuoka: 3, hiroshima: 2, osaka: 2 } },
+    '2weeks': { route: ['fukuoka', 'hiroshima', 'osaka', 'kyoto'], days: { fukuoka: 5, hiroshima: 3, osaka: 3, kyoto: 3 } },
+    '1month': { route: ['fukuoka', 'okinawa', 'hiroshima', 'osaka', 'tokyo'], days: { fukuoka: 8, okinawa: 6, hiroshima: 4, osaka: 6, tokyo: 6 } },
+  },
+  kanazawa: {
+    '1day':   { route: ['kanazawa'], days: { kanazawa: 1 } },
+    '2days':  { route: ['kanazawa'], days: { kanazawa: 2 } },
+    '3days':  { route: ['kanazawa'], days: { kanazawa: 3 } },
+    '1week':  { route: ['kanazawa', 'kyoto', 'tokyo'], days: { kanazawa: 3, kyoto: 2, tokyo: 2 } },
+    '2weeks': { route: ['kanazawa', 'kyoto', 'osaka', 'tokyo'], days: { kanazawa: 4, kyoto: 4, osaka: 3, tokyo: 3 } },
+    '1month': { route: ['kanazawa', 'kyoto', 'osaka', 'nagoya', 'tokyo'], days: { kanazawa: 6, kyoto: 8, osaka: 6, nagoya: 4, tokyo: 6 } },
+  },
 }
 
 // ─────────────────────────────────────────────
@@ -44,8 +113,19 @@ const JR_PASS_COST = {
 // Helper: find transport between two cities
 // ─────────────────────────────────────────────
 function findTransport(from, to) {
+  if (from === to) return null
   return transport.find(t => t.from === from && t.to === to) ||
-         transport.find(t => t.from === to && t.to === from) || null
+         transport.find(t => t.from === to && t.to === from) || {
+           id: `custom-${from}-${to}`,
+           from,
+           to,
+           type: 'train',
+           line: 'JR Limited Express / Shinkansen',
+           durationMin: 60,
+           costBudget: 3500,
+           costJPY: 3500,
+           notes: 'Scenic connecting train transit',
+         }
 }
 
 // ─────────────────────────────────────────────
@@ -61,18 +141,24 @@ function scoreActivity(activity, interests) {
 // Helper: pick best activities for a city/day
 // ─────────────────────────────────────────────
 function pickActivities(cityId, interests, travelStyle, dayIndex, usedIds) {
-  const cityActivities = activities.filter(a => a.city === cityId && !usedIds.has(a.id))
+  let cityActivities = activities.filter(a => a.city === cityId && !usedIds.has(a.id))
   
+  if (cityActivities.length < 3) {
+    cityActivities = activities.filter(a => a.city === cityId)
+  }
+  if (cityActivities.length === 0) {
+    cityActivities = activities
+  }
+
   // Sort by relevance to interests
   const scored = cityActivities.map(a => ({
     ...a,
-    score: scoreActivity(a, interests) + (Math.random() * 0.5), // small jitter for variety
+    score: scoreActivity(a, interests) + (Math.random() * 0.5),
   })).sort((a, b) => b.score - a.score)
 
-  // Pick 3 activities (morning, afternoon, evening) avoiding duplicates
-  const morning = scored.find(a => a.timeOfDay.includes('morning'))
-  const afternoon = scored.filter(a => a.timeOfDay.includes('afternoon') && a !== morning)[0]
-  const evening = scored.filter(a => a.timeOfDay.includes('evening') && a !== morning && a !== afternoon)[0]
+  const morning = scored.find(a => a.timeOfDay.includes('morning')) || scored[0]
+  const afternoon = scored.filter(a => a.timeOfDay.includes('afternoon') && a.id !== morning?.id)[0] || scored.filter(a => a.id !== morning?.id)[0] || scored[0]
+  const evening = scored.filter(a => a.timeOfDay.includes('evening') && a.id !== morning?.id && a.id !== afternoon?.id)[0] || scored.filter(a => a.id !== morning?.id && a.id !== afternoon?.id)[0] || scored[0]
 
   const picked = [morning, afternoon, evening].filter(Boolean)
   picked.forEach(a => usedIds.add(a.id))
@@ -84,10 +170,11 @@ function pickActivities(cityId, interests, travelStyle, dayIndex, usedIds) {
 // ─────────────────────────────────────────────
 function getAccommodation(cityId, travelStyle) {
   const city = cities.find(c => c.id === cityId)
+  const cityName = city?.name || 'Japan'
   const types = {
-    budget:   [`Khaosan ${city?.name} Hostel`, `Tokyo Backpackers Inn`, `Budget Guesthouse ${city?.name}`],
-    midrange: [`APA Hotel ${city?.name}`, `Dormy Inn ${city?.name}`, `Richmond Hotel ${city?.name}`],
-    luxury:   [`Park Hyatt ${city?.name}`, `The Ritz-Carlton ${city?.name}`, `Four Seasons ${city?.name}`],
+    budget:   [`Khaosan ${cityName} Guesthouse`, `${cityName} Backpackers Hostel`, `Capsule Hotel ${cityName}`],
+    midrange: [`APA Hotel ${cityName}`, `Dormy Inn Premium ${cityName}`, `Daiwa Roynet Hotel ${cityName}`],
+    luxury:   [`Park Hyatt ${cityName}`, `The Ritz-Carlton ${cityName}`, `Traditional Ryokan ${cityName}`],
   }
   const options = types[travelStyle] || types.midrange
   return options[Math.floor(Math.random() * options.length)]
@@ -96,10 +183,16 @@ function getAccommodation(cityId, travelStyle) {
 // ─────────────────────────────────────────────
 // Main itinerary generator
 // ─────────────────────────────────────────────
-export function generateItinerary({ duration, interests, travelStyle, groupType }) {
+export function generateItinerary({ duration, destination, interests, travelStyle, groupType }) {
   const style = travelStyle || 'midrange'
-  const cityRoute = CITY_ROUTES[duration] || CITY_ROUTES['1week']
-  const daysMap = DAYS_PER_CITY[duration] || DAYS_PER_CITY['1week']
+  const dur = duration || '1week'
+  const dest = destination || 'all'
+
+  const destConfig = ROUTE_CONFIGS[dest] || ROUTE_CONFIGS['all']
+  const plan = destConfig[dur] || ROUTE_CONFIGS['all'][dur] || ROUTE_CONFIGS['all']['1week']
+  
+  const cityRoute = plan.route
+  const daysMap = plan.days
   const totalDays = Object.values(daysMap).reduce((s, d) => s + d, 0)
 
   const usedActivityIds = new Set()
@@ -117,7 +210,7 @@ export function generateItinerary({ duration, interests, travelStyle, groupType 
     if (ci > 0) {
       const fromCity = cityRoute[ci - 1]
       arrivalTransport = findTransport(fromCity, cityId)
-      if (arrivalTransport) transportTotal += arrivalTransport.costJPY
+      if (arrivalTransport) transportTotal += (arrivalTransport.costJPY || 0)
     }
 
     for (let d = 0; d < numDays; d++) {
@@ -179,7 +272,8 @@ export function generateItinerary({ duration, interests, travelStyle, groupType 
   const cityObjects = cityRoute.map(id => cities.find(c => c.id === id)).filter(Boolean)
 
   return {
-    duration,
+    duration: dur,
+    destination: dest,
     interests,
     travelStyle: style,
     groupType,
@@ -203,4 +297,3 @@ export function generateItinerary({ duration, interests, travelStyle, groupType 
     })).filter(r => r.transport),
   }
 }
-
