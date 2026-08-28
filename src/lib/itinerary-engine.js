@@ -154,33 +154,52 @@ function scoreActivity(activity, interests) {
 }
 
 // ─────────────────────────────────────────────
-// Helper: pick best activities for a city/day
+// Helper: pick best activities for a city/day with ZERO REPEATS
 // ─────────────────────────────────────────────
 function pickActivities(cityId, interests, travelStyle, dayIndex, usedIds) {
   const cityActivities = activities.filter(a => a.city === cityId)
-  const hasInterests = interests && interests.length > 0
+  const hasInterests = Array.isArray(interests) && interests.length > 0
 
-  // 1. Separate activities matching user's selected interests
-  const matching = hasInterests
-    ? cityActivities.filter(a => a.interests.some(i => interests.includes(i)))
-    : cityActivities
+  // 1. Strictly find all UNUSED activities in this city
+  let unusedInCity = cityActivities.filter(a => !usedIds.has(a.id))
 
-  // 2. Form available pool prioritizing matching and unused activities
-  let pool = matching.filter(a => !usedIds.has(a.id))
-  if (pool.length < 3) {
-    pool = matching.length >= 3 ? matching : cityActivities.filter(a => !usedIds.has(a.id))
-    if (pool.length < 3) {
-      pool = cityActivities
-    }
+  // 2. Separate matching interest activities from remaining unused activities in the city
+  let matchingUnused = hasInterests
+    ? unusedInCity.filter(a => a.interests.some(i => interests.includes(i)))
+    : unusedInCity
+
+  // 3. Score pool: matching interest gets top priority (+100 per match), unused city items get high priority
+  let candidatePool = []
+  if (matchingUnused.length >= 3) {
+    candidatePool = matchingUnused
+  } else {
+    // Combine unused matching items with other unused activities in this city
+    const otherUnusedInCity = unusedInCity.filter(a => !matchingUnused.some(m => m.id === a.id))
+    candidatePool = [...matchingUnused, ...otherUnusedInCity]
   }
 
-  // 3. Sort pool by score (highest interest match count first)
-  const scored = [...pool].map(a => ({
-    ...a,
-    score: scoreActivity(a, interests) + (Math.random() * 0.1),
-  })).sort((a, b) => b.score - a.score)
+  // If still fewer than 3 unused items in this city, pull unused items from all of Japan
+  if (candidatePool.length < 3) {
+    const allUnusedInJapan = activities.filter(a => !usedIds.has(a.id) && !candidatePool.some(c => c.id === a.id))
+    candidatePool = [...candidatePool, ...allUnusedInJapan]
+  }
 
-  // 4. Select 3 distinct activities for morning, afternoon, evening
+  // Absolute fallback (only if user plans a 30+ day trip that exhausts the entire database)
+  if (candidatePool.length < 3) {
+    candidatePool = cityActivities
+  }
+
+  // 4. Sort candidates by relevance to interests and diversity
+  const scored = candidatePool.map(a => {
+    const matchScore = hasInterests ? a.interests.filter(i => interests.includes(i)).length * 100 : 10
+    const cityBonus = a.city === cityId ? 50 : 0
+    return {
+      ...a,
+      finalScore: matchScore + cityBonus + (Math.random() * 0.1),
+    }
+  }).sort((a, b) => b.finalScore - a.finalScore)
+
+  // 5. Select exactly 3 unique activities for morning, afternoon, evening
   const picked = []
 
   // Morning slot
@@ -191,22 +210,25 @@ function pickActivities(cityId, interests, travelStyle, dayIndex, usedIds) {
   const afternoon =
     scored.find(a => a.timeOfDay.includes('afternoon') && !picked.some(p => p.id === a.id)) ||
     scored.find(a => !picked.some(p => p.id === a.id)) ||
-    scored[0]
+    scored[1]
   if (afternoon && !picked.some(p => p.id === afternoon.id)) picked.push(afternoon)
 
   // Evening slot
   const evening =
     scored.find(a => a.timeOfDay.includes('evening') && !picked.some(p => p.id === a.id)) ||
     scored.find(a => !picked.some(p => p.id === a.id)) ||
-    scored[0]
+    scored[2]
   if (evening && !picked.some(p => p.id === evening.id)) picked.push(evening)
 
-  // Ensure exactly 3 activities are present
-  while (picked.length < 3 && scored.length > 0) {
-    const next = scored.find(a => !picked.some(p => p.id === a.id)) || scored[picked.length % scored.length]
-    picked.push(next)
+  // Ensure exactly 3 unique activities are picked without duplicates
+  for (const item of scored) {
+    if (picked.length >= 3) break
+    if (!picked.some(p => p.id === item.id)) {
+      picked.push(item)
+    }
   }
 
+  // Register in usedIds so they are NEVER repeated in any future day
   picked.forEach(a => usedIds.add(a.id))
   return picked
 }
