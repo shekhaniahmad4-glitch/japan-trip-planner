@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { Clock, DollarSign, Train, Plane, Bus, ChevronDown, ChevronUp, Bed, Coffee, Sun, Moon } from 'lucide-react'
+import { Clock, Train, Plane, Bus, ChevronDown, ChevronUp, Bed, Coffee, Sun, Moon, MapPin, Navigation } from 'lucide-react'
 
 const TRANSPORT_ICONS = {
   shinkansen: Train,
@@ -56,19 +56,32 @@ function TransitCard({ transport }) {
   )
 }
 
-function ActivityRow({ activity, slot }) {
+function ActivityRow({ activity, slot, day, onSelectSpot, isSelected }) {
   const TimeIcon = TIME_ICONS[slot] || Sun
   const timeColor = TIME_COLORS[slot] || 'text-gray-400'
   if (!activity) return null
 
+  const handleSpotClick = () => {
+    if (onSelectSpot) {
+      onSelectSpot({ ...activity, city: activity.city || day.cityId })
+    }
+  }
+
   return (
-    <div className="flex gap-3 py-3 border-b border-gray-50 last:border-0">
+    <div
+      onClick={handleSpotClick}
+      className={`group flex gap-3 py-3 px-2.5 rounded-xl border transition-all cursor-pointer ${
+        isSelected
+          ? 'bg-pink-50/90 border-pink-400 shadow-sm ring-1 ring-pink-400'
+          : 'border-transparent hover:bg-gray-100/80 hover:border-gray-200'
+      }`}
+    >
       <div className={`mt-0.5 ${timeColor} flex-shrink-0`}>
         <TimeIcon size={16} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="font-medium text-sm text-gray-800 leading-tight">
+          <p className="font-medium text-sm text-gray-800 leading-tight group-hover:text-pink-600 transition-colors">
             {activity.emoji} {activity.name}
           </p>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${COST_TIER_BADGE[activity.costTier]}`}>
@@ -76,16 +89,40 @@ function ActivityRow({ activity, slot }) {
           </span>
         </div>
         <p className="text-xs text-gray-500 mt-1 leading-relaxed">{activity.description}</p>
-        <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-          <Clock size={10} /> ~{activity.durationHrs}h
-        </p>
+        
+        <div className="flex items-center justify-between mt-2 pt-1 border-t border-gray-100/60">
+          <p className="text-[11px] text-gray-400 flex items-center gap-1">
+            <Clock size={11} /> ~{activity.durationHrs}h
+            {activity.station && (
+              <span className="text-indigo-600 ml-2 truncate max-w-[200px]">
+                🚇 {activity.station.split('(')[0]}
+              </span>
+            )}
+          </p>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleSpotClick()
+            }}
+            className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg transition-all ${
+              isSelected
+                ? 'bg-pink-500 text-white shadow-sm'
+                : 'bg-pink-50 text-pink-600 hover:bg-pink-100 group-hover:bg-pink-500 group-hover:text-white'
+            }`}
+          >
+            <Navigation size={10} />
+            <span>{isSelected ? 'Viewing on Map' : 'Map & Directions'}</span>
+          </button>
+        </div>
       </div>
     </div>
   )
 }
 
-export default function DayCard({ day, index }) {
-  const [expanded, setExpanded] = useState(index < 3)
+export default function DayCard({ day, index, selectedSpot, onSelectSpot }) {
+  const [expanded, setExpanded] = useState(index < 2)
 
   const [morning, afternoon, evening] = day.activities
 
@@ -98,6 +135,7 @@ export default function DayCard({ day, index }) {
     'from-rose-500 to-pink-600',
     'from-indigo-500 to-purple-600',
   ]
+
   const gradient = dayBgColors[index % dayBgColors.length]
 
   return (
@@ -155,11 +193,32 @@ export default function DayCard({ day, index }) {
 
               {/* Activities */}
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Today's Plan</p>
-                <div className="bg-gray-50 rounded-xl px-3">
-                  <ActivityRow activity={morning} slot="morning" />
-                  <ActivityRow activity={afternoon} slot="afternoon" />
-                  <ActivityRow activity={evening} slot="evening" />
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center justify-between">
+                  <span>Today's Plan</span>
+                  <span className="text-[10px] text-pink-600 font-normal">Click any spot to view on map & directions</span>
+                </p>
+                <div className="bg-gray-50 rounded-xl px-2 py-1 space-y-1">
+                  <ActivityRow
+                    activity={morning}
+                    slot="morning"
+                    day={day}
+                    onSelectSpot={onSelectSpot}
+                    isSelected={selectedSpot?.id === morning?.id}
+                  />
+                  <ActivityRow
+                    activity={afternoon}
+                    slot="afternoon"
+                    day={day}
+                    onSelectSpot={onSelectSpot}
+                    isSelected={selectedSpot?.id === afternoon?.id}
+                  />
+                  <ActivityRow
+                    activity={evening}
+                    slot="evening"
+                    day={day}
+                    onSelectSpot={onSelectSpot}
+                    isSelected={selectedSpot?.id === evening?.id}
+                  />
                 </div>
               </div>
 
@@ -198,4 +257,3 @@ export default function DayCard({ day, index }) {
     </motion.div>
   )
 }
-
