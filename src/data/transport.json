@@ -1,0 +1,16 @@
+[
+  { "id": "tr1", "from": "tokyo", "to": "kyoto", "type": "shinkansen", "line": "Tokaido Shinkansen (Nozomi)", "durationMin": 140, "costBudget": 13620, "costJPY": 13620, "notes": "Most direct route, ~2h20m. JR Pass valid on Hikari/Kodama (not Nozomi)." },
+  { "id": "tr2", "from": "kyoto", "to": "osaka", "type": "train", "line": "JR Special Rapid / Hankyu", "durationMin": 20, "costBudget": 560, "costJPY": 560, "notes": "Very short hop, trains every 10 minutes." },
+  { "id": "tr3", "from": "osaka", "to": "hiroshima", "type": "shinkansen", "line": "Sanyo Shinkansen (Nozomi)", "durationMin": 80, "costBudget": 9860, "costJPY": 9860, "notes": "~1h20m. JR Pass valid on Hikari/Kodama." },
+  { "id": "tr4", "from": "kyoto", "to": "nara", "type": "train", "line": "Kintetsu Nara Line", "durationMin": 45, "costBudget": 760, "costJPY": 760, "notes": "Easy day trip from Kyoto." },
+  { "id": "tr5", "from": "tokyo", "to": "hakone", "type": "train", "line": "Odakyu Romancecar", "durationMin": 90, "costBudget": 2200, "costJPY": 2200, "notes": "Scenic mountain railway with views of Fuji on clear days." },
+  { "id": "tr6", "from": "tokyo", "to": "nikko", "type": "train", "line": "Tobu Nikko Limited Express", "durationMin": 110, "costBudget": 2740, "costJPY": 2740, "notes": "Direct from Asakusa station." },
+  { "id": "tr7", "from": "tokyo", "to": "kanazawa", "type": "shinkansen", "line": "Hokuriku Shinkansen (Kagayaki)", "durationMin": 150, "costBudget": 14120, "costJPY": 14120, "notes": "~2h30m. New extension opened 2024 all the way to Tsuruga." },
+  { "id": "tr8", "from": "osaka", "to": "fukuoka", "type": "shinkansen", "line": "Sanyo Shinkansen (Nozomi)", "durationMin": 155, "costBudget": 15310, "costJPY": 15310, "notes": "~2h35m to Hakata station (Fukuoka)." },
+  { "id": "tr9", "from": "tokyo", "to": "sapporo", "type": "flight", "line": "ANA/JAL/Peach Aviation", "durationMin": 90, "costBudget": 12000, "costJPY": 12000, "notes": "Multiple daily flights. Shinkansen extension to Sapporo expected ~2030." },
+  { "id": "tr10", "from": "tokyo", "to": "okinawa", "type": "flight", "line": "ANA/JAL/Peach Aviation", "durationMin": 150, "costBudget": 15000, "costJPY": 15000, "notes": "~2h30m flight. Book in advance for best prices." },
+  { "id": "tr11", "from": "nagoya", "to": "kyoto", "type": "shinkansen", "line": "Tokaido Shinkansen", "durationMin": 40, "costBudget": 5830, "costJPY": 5830, "notes": "Very quick ~40 min hop." },
+  { "id": "tr12", "from": "hiroshima", "to": "fukuoka", "type": "shinkansen", "line": "Sanyo Shinkansen", "durationMin": 65, "costBudget": 7370, "costJPY": 7370, "notes": "~1h05m to Hakata." },
+  { "id": "tr13", "from": "tokyo", "to": "nagoya", "type": "shinkansen", "line": "Tokaido Shinkansen (Nozomi)", "durationMin": 100, "costBudget": 11090, "costJPY": 11090, "notes": "~1h40m. Central Japan's industrial heartland." },
+  { "id": "tr14", "from": "fukuoka", "to": "sapporo", "type": "flight", "line": "ANA/JAL", "durationMin": 150, "costBudget": 18000, "costJPY": 18000, "notes": "Southernmost to northernmost — a true cross-country journey." }
+]
