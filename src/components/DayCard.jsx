@@ -50,7 +50,7 @@ function TransitCard({ transport }) {
       </div>
       <div className="text-right flex-shrink-0">
         <p className="text-xs font-bold">{formatMinutes(transport.durationMin)}</p>
-        <p className="text-xs opacity-75">¥{transport.costJPY?.toLocaleString()}</p>
+        <p className="text-xs opacity-75">¥{transport.costJPY?.toLocaleString()} (₱{Math.round((transport.costJPY || 0) * 0.37).toLocaleString()})</p>
       </div>
     </div>
   )
@@ -72,7 +72,7 @@ function ActivityRow({ activity, slot }) {
             {activity.emoji} {activity.name}
           </p>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${COST_TIER_BADGE[activity.costTier]}`}>
-            {activity.costTier === 'free' ? 'Free' : `¥${activity.costJPY?.toLocaleString()}`}
+            {activity.costTier === 'free' ? 'Free' : `¥${activity.costJPY?.toLocaleString()} (₱${Math.round((activity.costJPY || 0) * 0.37).toLocaleString()})`}
           </span>
         </div>
         <p className="text-xs text-gray-500 mt-1 leading-relaxed">{activity.description}</p>
@@ -124,8 +124,8 @@ export default function DayCard({ day, index }) {
                 <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">Arrival</span>
               )}
             </div>
-            <p className="text-white/70 text-xs mt-0.5">
-              ¥{day.costs.total.toLocaleString()} estimated
+            <p className="text-white/80 text-xs mt-0.5 font-medium">
+              ¥{day.costs.total.toLocaleString()} · ₱{Math.round(day.costs.total * 0.37).toLocaleString()} estimated
             </p>
           </div>
         </div>
@@ -173,6 +173,7 @@ export default function DayCard({ day, index }) {
                 <div className="ml-auto text-right">
                   <p className="text-xs text-indigo-400">Per night</p>
                   <p className="text-sm font-bold text-indigo-700">¥{day.accommodation.costJPY.toLocaleString()}</p>
+                  <p className="text-[10px] text-indigo-400">₱{Math.round(day.accommodation.costJPY * 0.37).toLocaleString()}</p>
                 </div>
               </div>
 
@@ -186,6 +187,7 @@ export default function DayCard({ day, index }) {
                   <div key={label} className="text-center bg-gray-50 rounded-xl py-2">
                     <p className="text-xs text-gray-400">{label}</p>
                     <p className={`text-sm font-bold ${color}`}>¥{value.toLocaleString()}</p>
+                    <p className="text-[11px] text-gray-500">₱{Math.round(value * 0.37).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -196,3 +198,4 @@ export default function DayCard({ day, index }) {
     </motion.div>
   )
 }
+

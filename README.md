@@ -48,3 +48,4 @@ All data is static JSON — no API keys required:
 ## 🌐 Live Site
 
 Visit: `https://<your-username>.github.io/japan-trip-planner/`
+

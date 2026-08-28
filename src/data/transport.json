@@ -14,3 +14,4 @@
   { "id": "tr13", "from": "tokyo", "to": "nagoya", "type": "shinkansen", "line": "Tokaido Shinkansen (Nozomi)", "durationMin": 100, "costBudget": 11090, "costJPY": 11090, "notes": "~1h40m. Central Japan's industrial heartland." },
   { "id": "tr14", "from": "fukuoka", "to": "sapporo", "type": "flight", "line": "ANA/JAL", "durationMin": 150, "costBudget": 18000, "costJPY": 18000, "notes": "Southernmost to northernmost — a true cross-country journey." }
 ]
+

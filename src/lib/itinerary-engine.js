@@ -174,7 +174,7 @@ export function generateItinerary({ duration, interests, travelStyle, groupType 
     : transportTotal
 
   const grandTotalJPY = accommodationTotal + foodTotal + activitiesTotal + effectiveTransportCost
-  const grandTotalUSD = Math.round(grandTotalJPY / 155) // ~155 JPY per USD (2025 rate)
+  const grandTotalPHP = Math.round(grandTotalJPY * 0.37) // ~¥1 = ₱0.37 (2025 rate)
 
   const cityObjects = cityRoute.map(id => cities.find(c => c.id === id)).filter(Boolean)
 
@@ -192,7 +192,7 @@ export function generateItinerary({ duration, interests, travelStyle, groupType 
       activities: activitiesTotal,
       transport: effectiveTransportCost,
       grandTotalJPY,
-      grandTotalUSD,
+      grandTotalPHP,
       jrPassRecommended,
       jrPassCostJPY,
     },
@@ -203,3 +203,4 @@ export function generateItinerary({ duration, interests, travelStyle, groupType 
     })).filter(r => r.transport),
   }
 }
+

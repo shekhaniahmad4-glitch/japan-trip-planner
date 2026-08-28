@@ -6,7 +6,7 @@ const FEATURES = [
   { icon: Clock, title: 'Personalized Duration', desc: 'From a quick 3-day getaway to a full month-long journey across Japan.' },
   { icon: Compass, title: 'Interest-Matched Activities', desc: 'Anime, temples, food, nature, technology — curated for you.' },
   { icon: MapPin, title: 'Interactive Route Map', desc: 'Visualize your journey across Japan\'s iconic regions.' },
-  { icon: DollarSign, title: 'Real Cost Estimates', desc: 'Transparent breakdowns in both JPY and USD, including JR Pass tips.' },
+  { icon: DollarSign, title: 'Real Cost Estimates', desc: 'Transparent breakdowns in Philippine Peso (PHP) and Japanese Yen (JPY).' },
 ]
 
 const HIGHLIGHTS = [
@@ -244,3 +244,4 @@ export default function HomePage() {
     </motion.div>
   )
 }
+

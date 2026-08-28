@@ -32,3 +32,4 @@
   { "id": "a31", "city": "nikko", "name": "Tosho-gu Shrine Complex", "category": "history", "interests": ["history", "traditional", "nature"], "durationHrs": 3, "costTier": "budget", "costJPY": 2100, "description": "Extraordinarily elaborate shrine dedicated to Tokugawa Ieyasu, surrounded by massive cedar forest.", "timeOfDay": ["morning", "afternoon"], "emoji": "🏯" },
   { "id": "a32", "city": "nagoya", "name": "Toyota Commemorative Museum of Industry", "category": "technology", "interests": ["technology", "history"], "durationHrs": 3, "costTier": "budget", "costJPY": 500, "description": "Fascinating museum tracing Toyota's evolution from loom manufacturer to automotive giant.", "timeOfDay": ["morning", "afternoon"], "emoji": "🚗" }
 ]
+

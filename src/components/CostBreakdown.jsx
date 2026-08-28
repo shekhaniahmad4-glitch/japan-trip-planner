@@ -4,7 +4,7 @@ import { Banknote, Train, Bed, Utensils, Star } from 'lucide-react'
 const COLORS = ['#FF3366', '#3B82F6', '#10B981', '#F59E0B']
 
 const formatJPY = (v) => `¥${v.toLocaleString()}`
-const formatUSD = (v) => `$${v.toLocaleString()}`
+const formatPHP = (v) => `₱${v.toLocaleString()}`
 
 const CUSTOM_TOOLTIP = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -13,7 +13,7 @@ const CUSTOM_TOOLTIP = ({ active, payload }) => {
       <div className="bg-white shadow-xl rounded-xl px-4 py-3 border border-gray-100">
         <p className="font-semibold text-indigo-900 text-sm">{entry.name}</p>
         <p className="text-pink-600 font-bold">{formatJPY(entry.value)}</p>
-        <p className="text-gray-400 text-xs">{formatUSD(Math.round(entry.value / 155))}</p>
+        <p className="text-gray-400 text-xs">{formatPHP(Math.round(entry.value * 0.37))}</p>
       </div>
     )
   }
@@ -25,7 +25,7 @@ export default function CostBreakdown({ costs, totalDays }) {
 
   const {
     accommodation, food, activities, transport,
-    grandTotalJPY, grandTotalUSD, jrPassRecommended, jrPassCostJPY
+    grandTotalJPY, grandTotalPHP, jrPassRecommended, jrPassCostJPY
   } = costs
 
   const pieData = [
@@ -42,7 +42,8 @@ export default function CostBreakdown({ costs, totalDays }) {
     { category: 'Activities', jpyK: Math.round(activities / 1000) },
   ]
 
-  const avgPerDay = Math.round(grandTotalJPY / totalDays)
+  const avgPerDayJPY = Math.round(grandTotalJPY / totalDays)
+  const avgPerDayPHP = Math.round(grandTotalPHP / totalDays)
 
   return (
     <div className="space-y-6">
@@ -60,7 +61,7 @@ export default function CostBreakdown({ costs, totalDays }) {
             </div>
             <p className="text-xs text-gray-500 font-medium">{label}</p>
             <p className="text-lg font-bold text-indigo-900">{formatJPY(value)}</p>
-            <p className="text-xs text-gray-400">{formatUSD(Math.round(value / 155))}</p>
+            <p className="text-xs text-gray-400">{formatPHP(Math.round(value * 0.37))}</p>
           </div>
         ))}
       </div>
@@ -73,12 +74,12 @@ export default function CostBreakdown({ costs, totalDays }) {
             Estimated Total ({totalDays} days)
           </p>
           <p className="text-4xl font-bold font-serif">{formatJPY(grandTotalJPY)}</p>
-          <p className="text-white/60 text-lg mt-1">≈ {formatUSD(grandTotalUSD)} USD</p>
+          <p className="text-white/60 text-lg mt-1">≈ {formatPHP(grandTotalPHP)} Philippine Peso</p>
         </div>
         <div className="text-right">
           <p className="text-white/60 text-sm mb-1">Per Day Average</p>
-          <p className="text-2xl font-bold">{formatJPY(avgPerDay)}</p>
-          <p className="text-white/60">≈ {formatUSD(Math.round(avgPerDay / 155))} / day</p>
+          <p className="text-2xl font-bold">{formatJPY(avgPerDayJPY)}</p>
+          <p className="text-white/60">≈ {formatPHP(avgPerDayPHP)} / day</p>
         </div>
       </div>
 
@@ -90,7 +91,7 @@ export default function CostBreakdown({ costs, totalDays }) {
             <p className="font-semibold text-amber-900">JR Pass Recommended!</p>
             <p className="text-sm text-amber-700 mt-1">
               For your {totalDays}-day trip with multiple city hops, the{' '}
-              <strong>{jrPassRecommended.replace('day', '-Day')} JR Pass</strong> ({formatJPY(jrPassCostJPY)}) can save you significantly on Shinkansen fares.
+              <strong>{jrPassRecommended.replace('day', '-Day')} JR Pass</strong> ({formatJPY(jrPassCostJPY)} / {formatPHP(Math.round(jrPassCostJPY * 0.37))}) can save you significantly on Shinkansen fares.
               The transport cost above already reflects the pass savings.
             </p>
           </div>
@@ -149,7 +150,7 @@ export default function CostBreakdown({ costs, totalDays }) {
       </div>
 
       <p className="text-xs text-gray-400 text-center">
-        * Estimates based on 2025 average prices. Exchange rate: ¥155 ≈ \$1 USD. Actual costs may vary.
+        * Estimates based on 2025 average prices. Exchange rate: ¥1 ≈ ₱0.37 Philippine Peso. Actual costs may vary.
       </p>
     </div>
   )

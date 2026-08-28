@@ -30,3 +30,4 @@ export function useTrip() {
   if (!ctx) throw new Error('useTrip must be used within TripProvider')
   return ctx
 }
+

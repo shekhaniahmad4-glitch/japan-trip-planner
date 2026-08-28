@@ -30,9 +30,9 @@ const INTERESTS = [
 
 // ── Step 3: Travel Style ──────────────────────────────
 const TRAVEL_STYLES = [
-  { id: 'budget',   emoji: '🎒', label: 'Budget Explorer', desc: 'Hostels, convenience store meals, local transport', price: '$50–80/day' },
-  { id: 'midrange', emoji: '🏨', label: 'Comfortable Traveler', desc: 'Business hotels, local restaurants, JR Pass', price: '$120–200/day' },
-  { id: 'luxury',   emoji: '👑', label: 'Luxury Experience', desc: 'Ryokan stays, fine dining, private tours', price: '$350+/day' },
+  { id: 'budget',   emoji: '🎒', label: 'Budget Explorer', desc: 'Hostels, convenience store meals, local transport', price: '₱3,000–4,500 / day (¥8k–12k)' },
+  { id: 'midrange', emoji: '🏨', label: 'Comfortable Traveler', desc: 'Business hotels, local restaurants, JR Pass', price: '₱6,500–11,000 / day (¥18k–30k)' },
+  { id: 'luxury',   emoji: '👑', label: 'Luxury Experience', desc: 'Ryokan stays, fine dining, private tours', price: '₱18,500+ / day (¥50k+)' },
 ]
 
 const GROUP_TYPES = [
@@ -281,3 +281,4 @@ export default function PlanPage() {
     </motion.div>
   )
 }
+
